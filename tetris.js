@@ -13,7 +13,7 @@ let tempMovingItem;
 
 const BLOKCS={
     tree: [
-        [[0,0],[0,1],[1,0],[1,1]],
+        [[2,1],[0,1],[1,0],[1,1]],
         [],
         [],
         [],
@@ -23,7 +23,7 @@ const monvingItem={
      type:"tree",
      direction:0,
      top: 0,
-     left: 0,
+     left: 3,
 
 }
 
@@ -55,12 +55,71 @@ function prerpendNewLine(){
 
 function renderBlocks(){
     const { type, direction,top,left}=tempMovingItem; 
+    const movingBlocks= document.querySelectorAll(".moving");
+     movingBlocks.forEach(moving=>{
+         moving.classList.remove(type,"moving");
+     })
+
+     
     BLOKCS[type][direction].forEach(block => {
-        const x = block[0];
-        const y= block[1];
+        const x = block[0]+left;
+        const y= block[1]+top;
         
-        //요기는 잘 모르겠음 일단 넘어가자 23분부터 부면됨
-        const target = playground.childNodes[y].childNodes[0].childNodes[x];
+        
+        
+        const target = playground.childNodes[y]? playground.childNodes[y].childNodes[0].childNodes[x] :  null;
         console.log(target);
+        const isAvailabe = checkEmpty(target);
+        if(isAvailabe){
+             target.classList.add(type,"moving"); 
+        } 
+        else{
+            tempMovingItem = {...monvingItem};
+            setTimeout(()=>{
+                renderBlocks();
+                if(moveType==="top"){
+                    seizeBlock();
+                }
+            },0);
+            
+        }
+       
     })
+    monvingItem.left=left;
+    monvingItem.top=top;
+    monvingItem.direction=direction;
+} 
+
+//40:41 seizeBlock부터 만들기 settimeout 함수 왜 넣는거지??
+function seizeBlock(){
+
 }
+function checkEmpty(target){
+    if(!target){
+    return false;
+    }
+    return true;
+}
+
+function moveBlock(moveType,amount){
+    tempMovingItem[moveType] +=amount;
+    renderBlocks();
+}
+
+
+//event handling
+document.addEventListener("keydown", e =>{
+    switch(e.keyCode){
+        case 39:
+            moveBlock("left",1);
+            break;
+        case 37:
+            moveBlock("left",-1);
+            break;
+        case 40:
+            moveBlock("top",1);
+            break;
+    }
+
+    console.log(e);
+})
