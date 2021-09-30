@@ -2,7 +2,9 @@ import BLOKCS from "./blocks.js";
 
 //DOM
 const playground = document.querySelector(".playground > ul");
-
+const gameText=document.querySelector(".game-text");
+const scoreDisplay=document.querySelector(".score");
+const restartButton =document.querySelector(".game-text> button");
 //Setting
 const GAME_ROWS =20;
 const GAME_COLS =10;
@@ -15,7 +17,7 @@ let tempMovingItem;
 
 
 const monvingItem={
-     type:"tree",
+     type:"",
      direction:0,
      top: 0,
      left: 3,
@@ -36,7 +38,7 @@ function init(){
         prerpendNewLine();
      }
 
-     renderBlocks();
+     generateNewBlock();
 }
 
 
@@ -67,15 +69,20 @@ function renderBlocks(moveType=""){
         
         
         const target = playground.childNodes[y]? playground.childNodes[y].childNodes[0].childNodes[x] :  null;
-        console.log( playground.childNodes[y]);
+      
+
         const isAvailabe = checkEmpty(target);
         if(isAvailabe){
              target.classList.add(type,"moving"); 
         } 
         else{
             tempMovingItem = {...monvingItem};
+            if(moveType==='retry'){
+                clearInterval(downInterval);
+                showGameoverText();
+            }
             setTimeout(()=>{
-                renderBlocks();
+                renderBlocks('retry');
                 if(moveType==="top"){
                     seizeBlock();
                 }
@@ -90,6 +97,9 @@ function renderBlocks(moveType=""){
     monvingItem.direction=direction;
 } 
 
+function showGameoverText(){
+    gameText.style.display = "flex";
+}
  
 function seizeBlock(){
     const movingBlocks= document.querySelectorAll(".moving");
@@ -97,10 +107,40 @@ function seizeBlock(){
         moving.classList.remove("moving");
         moving.classList.add("seized");
     })
+    checkMatch();
+    
+}
+function checkMatch(){
+    const childNodes = playground.childNodes;
+    console.log(playground.childNodes);
+    childNodes.forEach(child=>{
+        let matched =true;
+        child.children[0].childNodes.forEach(li=>{
+            if(!li.classList.contains("seized")){
+                matched=false;
+            }
+        })
+        if(matched){
+            child.remove();
+            prerpendNewLine();
+            score++;
+            scoreDisplay.innerText=score;
+        }
+    })
+
+
+
     generateNewBlock();
 }
-
 function generateNewBlock(){
+
+    clearInterval(downInterval);
+    downInterval=setInterval(()=>{
+        moveBlock('top',1);
+    },duration)
+
+
+
     const blockArray= Object.entries(BLOKCS);
     const randomIndex= Math.floor(Math.random()*blockArray.length);
     
@@ -110,7 +150,7 @@ function generateNewBlock(){
     monvingItem.direction =0;
     tempMovingItem={...monvingItem};
     renderBlocks();
-}
+} 
 function checkEmpty(target){
     if(!target || target.classList.contains("seized")){
     return false;
@@ -128,7 +168,12 @@ function changeDirection(){
     direction === 3? tempMovingItem.direction = 0 : tempMovingItem.direction+=1; 
     renderBlocks();
 }
-
+function dropBlock(){
+    clearInterval(downInterval);
+    downInterval=setInterval(()=>
+        moveBlock("top",1)
+        ,10);
+}
 //event handling
 document.addEventListener("keydown", e =>{
     switch(e.keyCode){
@@ -143,7 +188,20 @@ document.addEventListener("keydown", e =>{
             break;
         case 38:
             changeDirection();
+            break;
+        case 32:
+            dropBlock();
+            break;
+            default:
+                break;
     }
 
     
+})
+
+
+restartButton.addEventListener("click", e=>{
+    playground.innerHTML = "";
+    gameText.style.display ="none";
+    init();
 })
