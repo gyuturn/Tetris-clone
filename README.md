@@ -1,3 +1,6 @@
-# Tetris-clone
+# Tetris-javaScript
 
-https://gyuturn.github.io/Tetris-clone/
+## Go To Page
+https://gyuturn.github.io/Tetris-js/
+
+## Summary
